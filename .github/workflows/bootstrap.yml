@@ -1,0 +1,35 @@
+name: bootstrap
+
+on:
+  workflow_dispatch:
+
+permissions: write-all
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04-arm
+    container:
+      image: ghcr.io/pkgsrc-ohos/ci-runner:latest
+      volumes:
+        - /opt/node24:/__e/node24:rw,rshared
+    steps:
+      - name: Setup Node.js for actions
+        run: |
+          curl -fsSLO https://github.com/hqzing/ohos-node/releases/download/v24.2.0/node-v24.2.0-openharmony-arm64.tar.gz
+          mkdir /__e/node24/bin
+          tar -zxf node-v24.2.0-openharmony-arm64.tar.gz -C /opt
+          ln -s /opt/node-v24.2.0-openharmony-arm64/bin/node /__e/node24/bin/node
+          rm node-v24.2.0-openharmony-arm64.tar.gz
+
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Bootstrap
+        env:
+          ALIBABA_CLOUD_ACCESS_KEY_ID: ${{ secrets.ALIBABA_CLOUD_ACCESS_KEY_ID }}
+          ALIBABA_CLOUD_ACCESS_KEY_SECRET: ${{ secrets.ALIBABA_CLOUD_ACCESS_KEY_SECRET }}
+          OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+          OSS_REGION: ${{ secrets.OSS_REGION }}
+          OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+          CDN_DOMAIN: ${{ secrets.CDN_DOMAIN }}
+        run: ./bootstrap.sh
